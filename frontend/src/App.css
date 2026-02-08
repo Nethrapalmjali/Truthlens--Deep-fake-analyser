@@ -1,0 +1,16 @@
+.App {
+  min-height: 100vh;
+}
+
+/* Typography */
+.font-heading {
+  font-family: 'Chivo', sans-serif;
+}
+
+.font-body {
+  font-family: 'Manrope', sans-serif;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
