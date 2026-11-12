@@ -102,6 +102,10 @@ JWT_SECRET = os.environ.get('JWT_SECRET', 'truthlens-deepfake-secret-key-change-
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 24
 
+# Upload limits (configurable via environment, in megabytes)
+MAX_IMAGE_MB = int(os.environ.get('MAX_IMAGE_MB', '10'))
+MAX_VIDEO_MB = int(os.environ.get('MAX_VIDEO_MB', '100'))
+
 # Create the main app
 app = FastAPI(title="TruthLens - Deepfake Detection API")
 
@@ -539,6 +543,21 @@ async def get_optional_user(credentials: Optional[HTTPAuthorizationCredentials] 
 
 # ============== AUTH ROUTES ==============
 
+async def read_upload_limited(file: UploadFile, max_mb: int) -> bytes:
+    """Read an upload in chunks, raising HTTP 413 once it exceeds max_mb."""
+    max_bytes = max_mb * 1024 * 1024
+    chunks = []
+    size = 0
+    while True:
+        chunk = await file.read(1024 * 1024)
+        if not chunk:
+            break
+        size += len(chunk)
+        if size > max_bytes:
+            raise HTTPException(status_code=413, detail=f"File too large. Maximum size is {max_mb} MB.")
+        chunks.append(chunk)
+    return b"".join(chunks)
+
 @api_router.post("/auth/register", response_model=TokenResponse)
 async def register(user_data: UserCreate):
     # Check if user exists
@@ -606,9 +625,10 @@ async def analyze_image_endpoint(
     if file.content_type not in allowed_types:
         raise HTTPException(status_code=400, detail="Invalid file type. Please upload a JPG, PNG, or WebP image.")
     
+    contents = await read_upload_limited(file, MAX_IMAGE_MB)
+
     try:
-        # Read and process image
-        contents = await file.read()
+        # Process image
         image = Image.open(io.BytesIO(contents)).convert('RGB')
         
         # Analyze
@@ -651,12 +671,13 @@ async def analyze_video_endpoint(
     if file.content_type not in allowed_types:
         raise HTTPException(status_code=400, detail="Invalid file type. Please upload an MP4, WebM, or MOV video.")
     
+    contents = await read_upload_limited(file, MAX_VIDEO_MB)
+
     temp_path = None
     try:
         # Save video to temp file
         with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_file:
             temp_path = temp_file.name
-            contents = await file.read()
             temp_file.write(contents)
         
         # Analyze video
@@ -703,7 +724,7 @@ async def analyze_batch_endpoint(
     for file in files[:10]:  # Limit to 10 files
         try:
             if file.content_type.startswith('image/'):
-                contents = await file.read()
+                contents = await read_upload_limited(file, MAX_IMAGE_MB)
                 image = Image.open(io.BytesIO(contents)).convert('RGB')
                 result = await analyze_image(image)
                 
