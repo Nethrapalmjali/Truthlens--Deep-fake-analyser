@@ -430,7 +430,9 @@ class UserBase(BaseModel):
     name: str
 
 class UserCreate(UserBase):
-    password: str
+    name: str = Field(min_length=1, max_length=100)
+    # bcrypt only uses the first 72 bytes, so cap the length to avoid silent truncation
+    password: str = Field(min_length=8, max_length=72)
 
 class UserLogin(BaseModel):
     email: EmailStr
