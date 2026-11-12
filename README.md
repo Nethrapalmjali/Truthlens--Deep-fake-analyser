@@ -33,7 +33,7 @@ TruthLens is an advanced deepfake detection platform that uses state-of-the-art 
 - **Framework**: FastAPI (Python)
 - **ML Model**: EfficientNet-B0 (PyTorch)
 - **Face Detection**: MTCNN (facenet-pytorch)
-- **Database**: MongoDB
+- **Storage**: In-memory store (demo mode; data resets on restart)
 - **Authentication**: JWT with bcrypt
 
 ### Frontend
@@ -47,7 +47,6 @@ TruthLens is an advanced deepfake detection platform that uses state-of-the-art 
 ### Prerequisites
 - Python 3.9+
 - Node.js 18+
-- MongoDB
 
 ### Backend Setup
 ```bash
@@ -55,6 +54,18 @@ cd backend
 pip install -r requirements.txt
 python server.py
 ```
+
+### Backend Configuration
+Optionally create `backend/.env` (never commit it):
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `JWT_SECRET` | insecure dev value | Secret used to sign JWTs. **Set this in any real deployment.** |
+| `MAX_IMAGE_MB` | `10` | Maximum image upload size in MB |
+| `MAX_VIDEO_MB` | `100` | Maximum video upload size in MB |
+
+The API listens on `http://localhost:8001` (docs at `/docs`, health check at `/api/health`).
+Registration requires a name and a password of 8–72 characters.
 
 ### Frontend Setup
 ```bash
