@@ -630,7 +630,10 @@ async def analyze_image_endpoint(
     try:
         # Process image
         image = Image.open(io.BytesIO(contents)).convert('RGB')
-        
+    except Exception:
+        raise HTTPException(status_code=400, detail="Could not read the image. The file may be corrupt or not a valid image.")
+
+    try:
         # Analyze
         result = await analyze_image(image)
         
