@@ -61,6 +61,7 @@ Optionally create `backend/.env` (never commit it):
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `JWT_SECRET` | insecure dev value | Secret used to sign JWTs. **Set this in any real deployment.** |
+| `CORS_ORIGINS` | `*` | Comma-separated list of allowed frontend origins, e.g. `https://app.example.com` |
 | `MAX_IMAGE_MB` | `10` | Maximum image upload size in MB |
 | `MAX_VIDEO_MB` | `100` | Maximum video upload size in MB |
 

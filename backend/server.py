@@ -102,6 +102,15 @@ JWT_SECRET = os.environ.get('JWT_SECRET', 'truthlens-deepfake-secret-key-change-
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 24
 
+DEFAULT_JWT_SECRET = 'truthlens-deepfake-secret-key-change-in-production'
+if JWT_SECRET == DEFAULT_JWT_SECRET:
+    logging.getLogger(__name__).warning(
+        "JWT_SECRET is not set; using an insecure default. Set JWT_SECRET before deploying."
+    )
+
+# Allowed CORS origins: comma-separated list, defaults to "*" for local development
+CORS_ORIGINS = [o.strip() for o in os.environ.get('CORS_ORIGINS', '*').split(',') if o.strip()] or ['*']
+
 # Upload limits (configurable via environment, in megabytes)
 MAX_IMAGE_MB = int(os.environ.get('MAX_IMAGE_MB', '10'))
 MAX_VIDEO_MB = int(os.environ.get('MAX_VIDEO_MB', '100'))
@@ -843,7 +852,7 @@ app.include_router(api_router)
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
