@@ -717,6 +717,10 @@ async def analyze_video_endpoint(
         
         return AnalysisResult(**analysis_doc)
         
+    except ValueError as e:
+        # Raised by analyze_video for unreadable/empty videos: a client error, not a server fault
+        logger.warning(f"Unreadable video {file.filename}: {str(e)}")
+        raise HTTPException(status_code=400, detail="Could not read the video. The file may be corrupt or in an unsupported format.")
     except Exception as e:
         logger.error(f"Error analyzing video: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error analyzing video: {str(e)}")
@@ -732,11 +736,12 @@ async def analyze_batch_endpoint(
 ):
     """Analyze multiple files in batch"""
     results = []
-    failed = 0
+    # Files beyond the 10-file limit are not processed, so count them as failed
+    failed = max(0, len(files) - 10)
     
     for file in files[:10]:  # Limit to 10 files
         try:
-            if file.content_type.startswith('image/'):
+            if (file.content_type or '').startswith('image/'):
                 contents = await read_upload_limited(file, MAX_IMAGE_MB)
                 image = Image.open(io.BytesIO(contents)).convert('RGB')
                 result = await analyze_image(image)
