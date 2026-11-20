@@ -44,6 +44,7 @@ class InMemoryDB:
         print("[TruthLens] Demo Mode: Using in-memory storage (no MongoDB required)")
     
     async def find_user_by_email(self, email: str) -> Optional[Dict]:
+        email = email.strip().lower()
         for user in self.users.values():
             if user.get("email") == email:
                 return user
@@ -571,7 +572,8 @@ async def read_upload_limited(file: UploadFile, max_mb: int) -> bytes:
 @api_router.post("/auth/register", response_model=TokenResponse)
 async def register(user_data: UserCreate):
     # Check if user exists
-    existing = await db.find_user_by_email(user_data.email)
+    email = user_data.email.strip().lower()
+    existing = await db.find_user_by_email(email)
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
     
@@ -579,7 +581,7 @@ async def register(user_data: UserCreate):
     user_id = str(uuid.uuid4())
     user_doc = {
         "id": user_id,
-        "email": user_data.email,
+        "email": email,
         "name": user_data.name,
         "password": hash_password(user_data.password),
         "created_at": datetime.now(timezone.utc).isoformat()
@@ -588,13 +590,13 @@ async def register(user_data: UserCreate):
     await db.insert_user(user_doc)
     
     # Create token
-    token = create_token(user_id, user_data.email)
+    token = create_token(user_id, email)
     
     return TokenResponse(
         access_token=token,
         user=UserResponse(
             id=user_id,
-            email=user_data.email,
+            email=email,
             name=user_data.name,
             created_at=user_doc["created_at"]
         )
