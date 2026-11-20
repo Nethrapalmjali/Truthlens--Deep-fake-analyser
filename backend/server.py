@@ -547,7 +547,8 @@ async def get_optional_user(credentials: Optional[HTTPAuthorizationCredentials] 
         payload = decode_token(token)
         user = await db.find_user_by_id(payload["sub"])
         return user
-    except:
+    except (HTTPException, KeyError):
+        # Invalid/expired token or malformed payload: treat as anonymous
         return None
 
 # ============== AUTH ROUTES ==============
