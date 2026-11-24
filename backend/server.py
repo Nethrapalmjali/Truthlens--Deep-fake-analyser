@@ -761,7 +761,10 @@ async def analyze_batch_endpoint(
                     "fake_probability": result["fake_probability"],
                     "real_probability": result["real_probability"],
                     "face_detected": result["face_detected"],
+                    "faces_analyzed": result.get("faces_analyzed", 0),
+                    "face_details": result.get("face_details", []),
                     "risk_level": result.get("risk_level", "UNKNOWN"),
+                    "analysis_method": result.get("analysis_method", "standard"),
                     "created_at": datetime.now(timezone.utc).isoformat()
                 }
                 
