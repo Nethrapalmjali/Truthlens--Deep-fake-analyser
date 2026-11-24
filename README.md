@@ -68,6 +68,26 @@ Optionally create `backend/.env` (never commit it):
 The API listens on `http://localhost:8001` (docs at `/docs`, health check at `/api/health`).
 Registration requires a name and a password of 8–72 characters.
 
+### API Overview
+All routes are prefixed with `/api`. Routes marked 🔒 require an `Authorization: Bearer <token>` header.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/auth/register` | Create an account and receive a JWT |
+| POST | `/auth/login` | Log in and receive a JWT |
+| GET | `/auth/me` 🔒 | Current user profile |
+| POST | `/analyze/image` | Analyze an image (JPG/PNG/WebP); token optional |
+| POST | `/analyze/video` | Analyze a video (MP4/WebM/MOV); token optional |
+| POST | `/analyze/batch` | Analyze up to 10 images at once; token optional |
+| GET | `/analyses` 🔒 | List your analyses (`limit` up to 100, `offset`) |
+| GET | `/analyses/stats` 🔒 | Totals of images, videos, fake and real verdicts |
+| GET | `/analyses/{id}` 🔒 | Fetch one analysis |
+| GET | `/analyses/{id}/export` 🔒 | Download an analysis as a JSON report |
+| DELETE | `/analyses/{id}` 🔒 | Delete an analysis |
+| GET | `/health` | Health check |
+
+Uploads over the size limits return `413`; unreadable images or videos return `400`.
+
 ### Frontend Setup
 ```bash
 cd frontend
