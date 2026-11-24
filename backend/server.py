@@ -673,8 +673,9 @@ async def analyze_image_endpoint(
         return AnalysisResult(**analysis_doc)
         
     except Exception as e:
-        logger.error(f"Error analyzing image: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error analyzing image: {str(e)}")
+        # Log full details server-side; don't leak internals to the client
+        logger.exception("Error analyzing image")
+        raise HTTPException(status_code=500, detail="Error analyzing image. Please try again.")
 
 @api_router.post("/analyze/video", response_model=AnalysisResult)
 async def analyze_video_endpoint(
@@ -724,8 +725,9 @@ async def analyze_video_endpoint(
         logger.warning(f"Unreadable video {file.filename}: {str(e)}")
         raise HTTPException(status_code=400, detail="Could not read the video. The file may be corrupt or in an unsupported format.")
     except Exception as e:
-        logger.error(f"Error analyzing video: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error analyzing video: {str(e)}")
+        # Log full details server-side; don't leak internals to the client
+        logger.exception("Error analyzing video")
+        raise HTTPException(status_code=500, detail="Error analyzing video. Please try again.")
     finally:
         # Cleanup temp file
         if temp_path and os.path.exists(temp_path):
