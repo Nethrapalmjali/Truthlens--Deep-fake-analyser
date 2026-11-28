@@ -56,7 +56,7 @@ python server.py
 ```
 
 ### Backend Configuration
-Optionally create `backend/.env` (never commit it):
+Optionally create `backend/.env` (never commit it; start from `backend/.env.example`):
 
 | Variable | Default | Description |
 |----------|---------|-------------|
