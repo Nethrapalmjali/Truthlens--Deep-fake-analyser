@@ -786,7 +786,7 @@ async def analyze_batch_endpoint(
 @api_router.get("/analyses", response_model=List[AnalysisResult])
 async def get_user_analyses(
     current_user: dict = Depends(get_current_user),
-    limit: int = Query(default=50, le=100),
+    limit: int = Query(default=50, ge=1, le=100),
     offset: int = Query(default=0, ge=0)
 ):
     analyses = await db.get_user_analyses(current_user["id"], limit, offset)
