@@ -113,8 +113,24 @@ if JWT_SECRET == DEFAULT_JWT_SECRET:
 CORS_ORIGINS = [o.strip() for o in os.environ.get('CORS_ORIGINS', '*').split(',') if o.strip()] or ['*']
 
 # Upload limits (configurable via environment, in megabytes)
-MAX_IMAGE_MB = int(os.environ.get('MAX_IMAGE_MB', '10'))
-MAX_VIDEO_MB = int(os.environ.get('MAX_VIDEO_MB', '100'))
+def _env_positive_int(name: str, default: int) -> int:
+    """Read a positive integer from the environment, falling back to default if unset or invalid."""
+    raw = os.environ.get(name)
+    if raw is None or not raw.strip():
+        return default
+    try:
+        value = int(raw)
+    except ValueError:
+        value = 0
+    if value <= 0:
+        logging.getLogger(__name__).warning(
+            "Invalid %s=%r; using default of %d", name, raw, default
+        )
+        return default
+    return value
+
+MAX_IMAGE_MB = _env_positive_int('MAX_IMAGE_MB', 10)
+MAX_VIDEO_MB = _env_positive_int('MAX_VIDEO_MB', 100)
 
 # Create the main app
 app = FastAPI(title="TruthLens - Deepfake Detection API")
